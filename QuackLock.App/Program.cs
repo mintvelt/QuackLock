@@ -1,9 +1,11 @@
-using System;
-using System.Windows.Forms;
-using System.Collections.Generic;
-using QuackLock.Core.Monitoring;
 using QuackLock.Core.Detection;
+using QuackLock.Core.Monitoring;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Reflection;
+using System.Windows.Forms;
 
 namespace QuackLock.App
 {
@@ -35,9 +37,17 @@ namespace QuackLock.App
 
         private static void SetupTrayIcon()
         {
+            var assembly = Assembly.GetExecutingAssembly();
+            var stream = assembly.GetManifestResourceStream("QuackLock.App.QuackStop.ico");
+            var icon = SystemIcons.Application; // Fallback naar standaard icoon
+            if (stream != null)
+            {
+                icon = new Icon(stream);
+
+            }
             _trayIcon = new NotifyIcon
             {
-                Icon = new Icon("QuackStop.ico"),
+                Icon = icon,
                 Text = "QuackLock is actief...",
                 Visible = true,
                 ContextMenuStrip = new ContextMenuStrip()

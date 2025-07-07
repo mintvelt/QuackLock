@@ -10,9 +10,9 @@
     <ApplicationIcon>QuackStop.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="QuackStop.ico">
+    <EmbeddedResource Include="QuackStop.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QuackLock.Core\QuackLock.Core.csproj" />

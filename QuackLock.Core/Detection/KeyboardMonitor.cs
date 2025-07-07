@@ -12,6 +12,7 @@ namespace QuackLock.Core.Detection
     public class KeyboardMonitor : Form, IMonitor
     {
         private readonly IDetectionEventHandler _handler;
+        private ushort? _lastKeyDown;
 
         // statistics
         private int _activeSamples = 0;
@@ -92,11 +93,24 @@ namespace QuackLock.Core.Detection
                     var raw = (RawInputInterop.RAWINPUT)Marshal.PtrToStructure(buffer, typeof(RawInputInterop.RAWINPUT))!;
                     if (raw.header.dwType == RawInputInterop.RIM_TYPEKEYBOARD)
                     {
-                        // Filter op echte toetsaanslag (key down)
-                        if (raw.data.keyboard.Message == 0x0100 /* WM_KEYDOWN */ ||
-                            raw.data.keyboard.Message == 0x0104 /* WM_SYSKEYDOWN */)
+                        // Alleen echte key down events
+                        if ((raw.data.keyboard.Message == 0x0100 /* WM_KEYDOWN */ ||
+                             raw.data.keyboard.Message == 0x0104 /* WM_SYSKEYDOWN */))
                         {
-                            Interlocked.Increment(ref _strokeCount);
+                            // Check op repeat (zelfde toets als vorige)
+                            if (_lastKeyDown != raw.data.keyboard.VKey)
+                            {
+                                Interlocked.Increment(ref _strokeCount);
+                                _lastKeyDown = raw.data.keyboard.VKey;
+                            }
+                            // else: ignore repeated key
+                        }
+                        // Reset bij key up (optioneel: maakt repeat na loslaten weer mogelijk)
+                        else if (raw.data.keyboard.Message == 0x0101 /* WM_KEYUP */ ||
+                                 raw.data.keyboard.Message == 0x0105 /* WM_SYSKEYUP */)
+                        {
+                            if (_lastKeyDown == raw.data.keyboard.VKey)
+                                _lastKeyDown = null;
                         }
                     }
                 }
